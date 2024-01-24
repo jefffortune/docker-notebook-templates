@@ -1,0 +1,23 @@
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+
+# Set environment variables
+ENV CUDA_HOME /usr/local/cuda
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-pip
+
+# Upgrade pip and install Jupyter and ipykernel
+RUN python3 -m pip install --no-cache --upgrade pip && \
+    python3 -m pip install jupyter ipykernel
+
+# Copy app code and models
+COPY . /app
+
+# Set the working directory
+WORKDIR /app
+
+# Set up the command to run the notebook server
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token='token'", "--NotebookApp.password=''", "--NotebookApp.disable_check_xsrf=True"]

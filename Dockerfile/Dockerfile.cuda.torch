@@ -1,0 +1,40 @@
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+
+# Set environment variables
+ENV CUDA_HOME /usr/local/cuda
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    g++ \
+    git \
+    cuda-cudart-11-8 \
+    cuda-command-line-tools-11-8 \
+    cuda-nvcc-11-8 \
+    software-properties-common \
+    wget \
+    cuda-cudart-dev-11-8 \
+    ninja-build \
+    python3-pip
+
+
+# Upgrade pip and install Jupyter and ipykernel
+RUN python3 -m pip install --no-cache --upgrade pip && \
+    python3 -m pip install jupyter ipykernel
+
+# Install PyTorch
+RUN pip install torch==2.0.0+cu118 \
+    torchvision==0.15.1+cu118 \
+    torchaudio==2.0.1 \
+    --index-url https://download.pytorch.org/whl/cu118
+
+
+# Copy app code and models
+COPY . /app
+
+# Set the working directory
+WORKDIR /app
+
+# Set up the command to run the notebook server
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token='token'", "--NotebookApp.password=''", "--NotebookApp.disable_check_xsrf=True"]
